@@ -114,19 +114,90 @@ class _AddTicketNfcScreenState extends State<AddTicketNfcScreen> {
               '설정 열기',
               style: TextStyle(color: Color(0xFFC10230)),
             ),
-            onPressed: () async {
+            onPressed: () {
               Navigator.pop(dialogContext);
-              await _openNfcSettings();
-              if (!mounted) return;
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const TicketScreen()),
-                (Route<dynamic> route) => false,
-              );
+              if (Platform.isAndroid) {
+                // 안드로이드는 'NFC 태그 읽기/쓰기'까지 켜야 하므로 한 번 더 안내
+                _showReadWriteConfirmDialog();
+              } else {
+                _goToSettingsThenHome();
+              }
             },
           ),
         ],
       ),
+    );
+  }
+
+  void _showReadWriteConfirmDialog() {
+    showCupertinoDialog(
+      context: context,
+      builder: (dialogContext) => CupertinoAlertDialog(
+        title: const Text('설정 확인'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text.rich(
+            TextSpan(
+              style: const TextStyle(fontSize: 13, height: 1.5),
+              children: const [
+                TextSpan(text: '카드를 읽으려면\n'),
+                TextSpan(
+                  text: 'NFC',
+                  style: TextStyle(
+                    color: Color(0xFFC10230),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextSpan(text: ' · '),
+                TextSpan(
+                  text: '태그 읽기/쓰기',
+                  style: TextStyle(
+                    color: Color(0xFFC10230),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextSpan(text: '를 '),
+                TextSpan(
+                  text: '모두',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                TextSpan(text: ' 켜야 합니다.\n확인하셨나요?'),
+              ],
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('취소'),
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              if (mounted) Navigator.of(context).pop();
+            },
+          ),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            child: const Text(
+              '설정으로 이동',
+              style: TextStyle(color: Color(0xFFC10230)),
+            ),
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              _goToSettingsThenHome();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _goToSettingsThenHome() async {
+    await _openNfcSettings();
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const TicketScreen()),
+      (Route<dynamic> route) => false,
     );
   }
 
