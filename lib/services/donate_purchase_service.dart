@@ -26,6 +26,11 @@ class DonatePurchaseService {
   String get productId =>
       dotenv.env['IAP_DONATE_PRODUCT_ID'] ?? 'donate_support';
 
+  String get subscriptionProductId =>
+      dotenv.env['IAP_DONATE_SUB_PRODUCT_ID'] ?? 'donate_monthly';
+
+  Set<String> get _donateProductIds => {productId, subscriptionProductId};
+
   Future<void> initialize() async {
     if (!isSupported) return;
 
@@ -45,7 +50,17 @@ class DonatePurchaseService {
     _subscription = null;
   }
 
-  Future<void> buyDonate() async {
+  /// 일시불(1회성) 후원
+  Future<void> buyDonate() => _startPurchase(productId, isSubscription: false);
+
+  /// 정기 구독 후원
+  Future<void> buySubscription() =>
+      _startPurchase(subscriptionProductId, isSubscription: true);
+
+  Future<void> _startPurchase(
+    String targetProductId, {
+    required bool isSubscription,
+  }) async {
     if (!isSupported) {
       onFeedback?.call('이 기기에서는 인앱 결제를 지원하지 않습니다.', isError: true);
       return;
@@ -58,19 +73,23 @@ class DonatePurchaseService {
 
     _purchaseInProgress = true;
     try {
-      final response = await _iap.queryProductDetails({productId});
+      final response = await _iap.queryProductDetails({targetProductId});
       if (response.notFoundIDs.isNotEmpty || response.productDetails.isEmpty) {
         onFeedback?.call(
-          '후원 상품을 찾을 수 없습니다. Play Console에 상품을 등록해 주세요.',
+          '후원 상품을 찾을 수 없습니다. 스토어에 상품을 등록해 주세요.',
           isError: true,
         );
         return;
       }
 
       final product = response.productDetails.first;
-      final started = await _iap.buyConsumable(
-        purchaseParam: PurchaseParam(productDetails: product),
-      );
+      final purchaseParam = PurchaseParam(productDetails: product);
+
+      // 구독은 비소비성(nonConsumable), 일시불은 소비성(consumable)으로 결제
+      final started = isSubscription
+          ? await _iap.buyNonConsumable(purchaseParam: purchaseParam)
+          : await _iap.buyConsumable(purchaseParam: purchaseParam);
+
       if (!started) {
         onFeedback?.call('결제를 시작하지 못했습니다.', isError: true);
       }
@@ -83,13 +102,17 @@ class DonatePurchaseService {
 
   Future<void> _onPurchaseUpdated(List<PurchaseDetails> purchases) async {
     for (final purchase in purchases) {
-      if (purchase.productID != productId) continue;
+      if (!_donateProductIds.contains(purchase.productID)) continue;
+
+      final isSubscription = purchase.productID == subscriptionProductId;
 
       switch (purchase.status) {
         case PurchaseStatus.pending:
           break;
         case PurchaseStatus.purchased:
-          onFeedback?.call('후원해 주셔서 감사합니다!');
+          onFeedback?.call(
+            isSubscription ? '정기 후원이 시작되었습니다. 감사합니다!' : '후원해 주셔서 감사합니다!',
+          );
           break;
         case PurchaseStatus.restored:
           onFeedback?.call('후원 내역이 복원되었습니다.');

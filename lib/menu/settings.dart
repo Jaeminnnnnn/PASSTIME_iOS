@@ -94,10 +94,129 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Future<void> _handleDonateTap() async {
+  void _handleDonateTap() {
     if (_isDonating) return;
+    _showDonateOptionSheet();
+  }
+
+  void _showDonateOptionSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 16),
+              const Text(
+                '후원 방식 선택',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF334D61),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'PASSTIME 운영에 힘이 됩니다. 감사합니다!',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: const Color(0xFF334D61).withOpacity(0.6),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildDonateOption(
+                icon: Icons.volunteer_activism_rounded,
+                title: '일시불 후원',
+                subtitle: '한 번만 후원해요',
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _startDonate(subscription: false);
+                },
+              ),
+              _buildDonateOption(
+                icon: Icons.autorenew_rounded,
+                title: '정기 구독 후원',
+                subtitle: '매월 자동으로 후원해요',
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _startDonate(subscription: true);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDonateOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFFC10230).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: const Color(0xFFC10230), size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF334D61),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: const Color(0xFF334D61).withOpacity(0.55),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: const Color(0xFF334D61).withOpacity(0.4),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _startDonate({required bool subscription}) async {
     setState(() => _isDonating = true);
-    await DonatePurchaseService.instance.buyDonate();
+    if (subscription) {
+      await DonatePurchaseService.instance.buySubscription();
+    } else {
+      await DonatePurchaseService.instance.buyDonate();
+    }
     if (mounted && _isDonating) {
       setState(() => _isDonating = false);
     }
