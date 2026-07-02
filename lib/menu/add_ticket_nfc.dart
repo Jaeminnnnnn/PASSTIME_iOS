@@ -218,18 +218,38 @@ class _AddTicketNfcScreenState extends State<AddTicketNfcScreen> {
     showCupertinoDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const CupertinoAlertDialog(
-        title: Text("NFC 대기 중"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(height: 16),
-            CircularProgressIndicator(),
-            SizedBox(height: 12),
-            Text("카드를 핸드폰에 태그해주세요"),
-          ],
+      builder: (context) => PopScope(
+        canPop: false,
+        onPopInvoked: (didPop) {
+          if (didPop) return;
+          _cancelNfcAndGoHome();
+        },
+        child: const CupertinoAlertDialog(
+          title: Text("NFC 대기 중"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: 16),
+              CircularProgressIndicator(),
+              SizedBox(height: 12),
+              Text("카드를 핸드폰에 태그해주세요"),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Future<void> _cancelNfcAndGoHome() async {
+    _isDialogShowing = false;
+    try {
+      await NfcManager.instance.stopSession();
+    } catch (_) {}
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const TicketScreen()),
+      (Route<dynamic> route) => false,
     );
   }
 

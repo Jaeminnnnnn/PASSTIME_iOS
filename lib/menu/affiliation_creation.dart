@@ -266,15 +266,18 @@ class _AffiliationCreationScreenState extends State<AffiliationCreationScreen> {
             ),
           ),
           backgroundColor: const Color(0xFFF5F6F7),
-          body: Column(
+          body: Stack(
             children: [
-              Expanded(
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: MediaQuery.of(context).viewInsets.bottom,
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom,
-                  ),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -325,33 +328,37 @@ class _AffiliationCreationScreenState extends State<AffiliationCreationScreen> {
                             color: Colors.black.withOpacity(0.5),
                           ),
                         ),
-                        const SizedBox(height: 50),
                       ],
                     ),
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
-                child: SafeArea(
-                  child: ElevatedButton(
-                    onPressed: isFormValid ? _submitAffiliationRequest : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFC10230),
-                      disabledBackgroundColor:
-                          const Color(0xFFC10230).withOpacity(0.3),
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
+                  child: SafeArea(
+                    child: ElevatedButton(
+                      onPressed: isFormValid ? _submitAffiliationRequest : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFC10230),
+                        disabledBackgroundColor:
+                            const Color(0xFFC10230).withOpacity(0.3),
+                        minimumSize: const Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        foregroundColor: Colors.white,
+                        disabledForegroundColor: Colors.white.withOpacity(0.7),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      foregroundColor: Colors.white,
-                      disabledForegroundColor: Colors.white.withOpacity(0.7),
-                    ),
-                    child: const Text(
-                      '소속 생성 신청',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      child: const Text(
+                        '소속 생성 신청',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ),

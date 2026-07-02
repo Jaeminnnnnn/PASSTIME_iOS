@@ -10,9 +10,11 @@ class AdminTicketCard extends StatelessWidget {
   final String eventCode;
   final int totalCount;
   final int pendingCount;
+  final int refundPendingCount;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback? onPaymentTap;
+  final VoidCallback? onRefundTap;
 
   const AdminTicketCard({
     super.key,
@@ -24,9 +26,11 @@ class AdminTicketCard extends StatelessWidget {
     required this.eventCode,
     required this.totalCount,
     required this.pendingCount,
+    this.refundPendingCount = 0,
     required this.onEdit,
     required this.onDelete,
     this.onPaymentTap,
+    this.onRefundTap,
   });
 
   static const _accentColor = Color(0xFF334D61);
@@ -81,29 +85,61 @@ class AdminTicketCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 8),
-            Text.rich(
-              TextSpan(
-                children: [
-                  const TextSpan(
-                    text: '행사 코드  ',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+            Row(
+              children: [
+                Expanded(
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        const TextSpan(
+                          text: '행사 코드  ',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        TextSpan(
+                          text: eventCode.isNotEmpty ? eventCode : '-',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black.withOpacity(0.5),
+                          ),
+                        ),
+                      ],
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  TextSpan(
-                    text: eventCode.isNotEmpty ? eventCode : '-',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black.withOpacity(0.5),
+                ),
+                if (refundPendingCount > 0) ...[
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: onRefundTap,
+                    behavior: HitTestBehavior.opaque,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '환불 승인 대기 $refundPendingCount명',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFC10230),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.chevron_right,
+                          size: 20,
+                          color: Color(0xFFC10230),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              ],
             ),
             const SizedBox(height: 6),
             Row(

@@ -125,7 +125,7 @@ class _AddTicketCodeScreenState extends State<AddTicketCodeScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,
+      canPop: true,
       child: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
@@ -156,79 +156,171 @@ class _AddTicketCodeScreenState extends State<AddTicketCodeScreen> {
               ),
             ),
           ),
-          body: Column(
+          body: Stack(
             children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "코드",
-                            style: TextStyle(
-                              color: Colors.black.withOpacity(0.6),
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          TextField(
-                            controller: _controller,
-                            decoration: InputDecoration(
-                              hintText: "코드 입력",
-                              hintStyle: TextStyle(
-                                color: Colors.black.withOpacity(0.3),
-                                fontSize: 16,
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints:
+                            BoxConstraints(minHeight: constraints.maxHeight),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 92,
+                                height: 92,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFC10230)
+                                      .withOpacity(0.05),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: Container(
+                                    width: 60,
+                                    height: 60,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFC10230)
+                                          .withOpacity(0.12),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.confirmation_number_rounded,
+                                      size: 30,
+                                      color: Color(0xFFC10230),
+                                    ),
+                                  ),
+                                ),
                               ),
-                              isDense: true,
-                              contentPadding: EdgeInsets.zero,
-                              border: InputBorder.none,
-                            ),
-                            textInputAction: TextInputAction.done,
+                              const SizedBox(height: 28),
+                              const Text(
+                                '행사 코드로 추가',
+                                style: TextStyle(
+                                  color: Color(0xFF1F2D3A),
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                '발급받은 행사 코드를 입력하면\n입장권이 자동으로 추가됩니다.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.black.withOpacity(0.4),
+                                  fontSize: 14,
+                                  height: 1.5,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 36),
+                              TextField(
+                                controller: _controller,
+                                textAlign: TextAlign.center,
+                                textInputAction: TextInputAction.done,
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 2,
+                                  color: Color(0xFF1F2D3A),
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: '코드 입력',
+                                  hintStyle: TextStyle(
+                                    color: Colors.black.withOpacity(0.22),
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: 1,
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 14, horizontal: 16),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.zero,
+                                    borderSide: BorderSide(
+                                      color: const Color(0xFF334D61)
+                                          .withOpacity(0.15),
+                                    ),
+                                  ),
+                                  focusedBorder: const OutlineInputBorder(
+                                    borderRadius: BorderRadius.zero,
+                                    borderSide: BorderSide(
+                                      color: Color(0xFFC10230),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.info_outline_rounded,
+                                    size: 15,
+                                    color: Colors.black.withOpacity(0.3),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '행사 주최 측에서 안내받은 코드를 입력하세요.',
+                                    style: TextStyle(
+                                      color: Colors.black.withOpacity(0.35),
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
-                child: SafeArea(
-                  child: ElevatedButton(
-                    onPressed: _isButtonEnabled
-                        ? () {
-                            final eventCode = _controller.text.trim();
-                            _addTicketCode(eventCode);
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFC10230),
-                      disabledBackgroundColor:
-                          const Color(0xFFC10230).withOpacity(0.3),
-                      minimumSize: const Size(double.infinity, 55),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
+                  child: SafeArea(
+                    child: ElevatedButton(
+                      onPressed: _isButtonEnabled
+                          ? () {
+                              final eventCode = _controller.text.trim();
+                              _addTicketCode(eventCode);
+                            }
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFC10230),
+                        disabledBackgroundColor:
+                            const Color(0xFFC10230).withOpacity(0.3),
+                        minimumSize: const Size(double.infinity, 56),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        foregroundColor: Colors.white,
+                        disabledForegroundColor: Colors.white.withOpacity(0.7),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      foregroundColor: Colors.white,
-                      disabledForegroundColor: Colors.white.withOpacity(0.7),
-                    ),
-                    child: const Text(
-                      '완료',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      child: const Text(
+                        '입장권 추가',
+                        style: TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ),

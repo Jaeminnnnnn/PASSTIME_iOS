@@ -227,6 +227,50 @@ class _RequestRefundListScreenState extends State<RequestRefundListScreen>
     return _eventsByAffiliationId[affiliationId] ?? [];
   }
 
+  int _pendingForAffiliation(String affiliationId) {
+    return _eventsForAffiliation(affiliationId)
+        .fold<int>(0, (sum, e) => sum + (e['pendingCount'] as int? ?? 0));
+  }
+
+  Widget _buildAffiliationTab(String name, int count) {
+    return Tab(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Text(name),
+          if (count > 0)
+            Positioned(
+              right: -13,
+              top: -6,
+              child: _countBadge(count),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _countBadge(int count) {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 12),
+      height: 12,
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      decoration: BoxDecoration(
+        color: const Color(0xFFC10230),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        count > 99 ? '99+' : '$count',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 8,
+          fontWeight: FontWeight.bold,
+          height: 1.0,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -261,9 +305,15 @@ class _RequestRefundListScreenState extends State<RequestRefundListScreen>
                               controller: _tabController,
                               tabAlignment: TabAlignment.start,
                               tabs: _affiliations.map((affiliation) {
-                                return Tab(
-                                    text: AffiliationApiParser.affiliationName(
-                                        affiliation));
+                                final affiliationId =
+                                    AffiliationApiParser.affiliationId(
+                                            affiliation) ??
+                                        '';
+                                return _buildAffiliationTab(
+                                  AffiliationApiParser.affiliationName(
+                                      affiliation),
+                                  _pendingForAffiliation(affiliationId),
+                                );
                               }).toList(),
                               labelColor: const Color(0xFFC10230),
                               unselectedLabelColor: Colors.grey,

@@ -335,17 +335,18 @@ class _RequestAdminDetailScreenState extends State<RequestAdminDetailScreen> {
                     final bool isProcessed =
                         detail.isApproved || detail.isRejected;
 
-                    return Column(
+                    return Stack(
                       children: [
-                        Expanded(
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: MediaQuery.of(context).viewInsets.bottom,
                           child: SingleChildScrollView(
                             physics: const AlwaysScrollableScrollPhysics(),
-                            padding: EdgeInsets.fromLTRB(
-                              16,
-                              16,
-                              16,
-                              16 + MediaQuery.of(context).viewInsets.bottom,
-                            ),
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -388,7 +389,12 @@ class _RequestAdminDetailScreenState extends State<RequestAdminDetailScreen> {
                             ),
                           ),
                         ),
-                        _buildBottomSection(detail, isProcessed),
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: _buildBottomSection(detail, isProcessed),
+                        ),
                       ],
                     );
                   } else {

@@ -171,24 +171,35 @@ class _SendPaymentDetailScreenState extends State<SendPaymentDetailScreen> {
                 data["aiReviewStatus"]?.toString() ?? 'none';
             final aiReview = data["aiReview"] as Map<String, dynamic>?;
 
+            String v(String key) => (data[key] ?? "").toString();
+
             return Column(
               children: [
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        if (aiReviewStatus != 'none')
+                        _buildStatusBadge(isApproved),
+                        const SizedBox(height: 20),
+                        if (aiReviewStatus != 'none') ...[
                           _buildAiReviewSection(aiReviewStatus, aiReview),
-                        _buildPaymentImage(data["paymentPicture"]),
-                        const SizedBox(height: 32),
-                        _buildInfoTile("이름", data["name"]),
-                        _buildInfoTile("학번", data["studentId"]),
-                        _buildInfoTile("전화번호", data["phone"]),
-                        _buildInfoTile("행사", data["eventTitle"]),
-                        const SizedBox(height: 24),
+                          const SizedBox(height: 20),
+                        ],
+                        _buildImageSection(data["paymentPicture"]),
+                        const SizedBox(height: 20),
+                        _buildSection("납부자 정보", [
+                          ["이름", v("name")],
+                          ["학번", v("studentId")],
+                          ["전화번호", v("phone")],
+                        ]),
+                        const SizedBox(height: 16),
+                        _buildSection("행사 정보", [
+                          ["행사", v("eventTitle")],
+                        ]),
+                        const SizedBox(height: 8),
                       ],
                     ),
                   ),
@@ -282,11 +293,10 @@ class _SendPaymentDetailScreenState extends State<SendPaymentDetailScreen> {
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,65 +386,252 @@ class _SendPaymentDetailScreenState extends State<SendPaymentDetailScreen> {
     );
   }
 
-  Widget _buildPaymentImage(String? imageUrl) {
-    return Container(
-      width: 240,
-      height: 240,
-      decoration: BoxDecoration(
-        color: const Color(0xFF334D61).withOpacity(0.05),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: imageUrl != null && imageUrl.isNotEmpty
-          ? Center(
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.contain,
-                width: 240,
-                height: 240,
+  static const _accent = Color(0xFF334D61);
+
+  Widget _buildStatusBadge(bool isApproved) {
+    final Color color = isApproved ? const Color(0xFF2E7D32) : _accent;
+    final String label = isApproved ? "승인 완료" : "승인 대기";
+    final IconData icon =
+        isApproved ? Icons.check_circle_rounded : Icons.hourglass_top_rounded;
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: color,
               ),
-            )
-          : Center(
-              child: Text("납부내역 사진",
-                  style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black.withOpacity(0.5),
-                      fontWeight: FontWeight.w600)),
             ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildInfoTile(String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF334D61).withOpacity(0.05),
-        borderRadius: BorderRadius.circular(4),
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+          color: _accent.withOpacity(0.55),
+          letterSpacing: 0.2,
+        ),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 1,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.black,
+    );
+  }
+
+  Widget _buildImageSection(String? imageUrl) {
+    final bool hasImage = imageUrl != null && imageUrl.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionTitle("납부 내역"),
+        GestureDetector(
+          onTap: hasImage ? () => _showFullImage(imageUrl) : null,
+          child: Container(
+            width: double.infinity,
+            height: 300,
+            decoration: BoxDecoration(
+              color: _accent.withOpacity(0.04),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: _accent.withOpacity(0.08)),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: hasImage
+                ? Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Image.network(
+                          imageUrl,
+                          fit: BoxFit.contain,
+                          loadingBuilder: (context, child, progress) {
+                            if (progress == null) return child;
+                            return const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            );
+                          },
+                          errorBuilder: (context, error, stack) => Center(
+                            child: Text(
+                              "이미지를 불러올 수 없습니다",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black.withOpacity(0.4),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        right: 10,
+                        bottom: 10,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.55),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.zoom_in_rounded,
+                                  size: 15, color: Colors.white),
+                              SizedBox(width: 4),
+                              Text(
+                                "크게 보기",
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.image_not_supported_outlined,
+                            size: 40, color: Colors.black.withOpacity(0.25)),
+                        const SizedBox(height: 8),
+                        Text(
+                          "납부내역 사진 없음",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black.withOpacity(0.4),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showFullImage(String imageUrl) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.9),
+      builder: (dialogContext) {
+        return GestureDetector(
+          onTap: () => Navigator.of(dialogContext).pop(),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: InteractiveViewer(
+                  minScale: 0.8,
+                  maxScale: 4,
+                  child: Center(
+                    child: Image.network(imageUrl, fit: BoxFit.contain),
+                  ),
+                ),
               ),
-            ),
+              Positioned(
+                top: MediaQuery.of(dialogContext).padding.top + 8,
+                right: 12,
+                child: IconButton(
+                  icon: const Icon(Icons.close_rounded,
+                      color: Colors.white, size: 30),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              value.isNotEmpty ? value : "-",
-              style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black.withOpacity(0.5),
-                  fontWeight: FontWeight.w600),
-            ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSection(String title, List<List<String>> rows) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionTitle(title),
+        Container(
+          decoration: BoxDecoration(
+            color: _accent.withOpacity(0.04),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _accent.withOpacity(0.08)),
           ),
-        ],
-      ),
+          child: Column(
+            children: [
+              for (int i = 0; i < rows.length; i++)
+                _buildInfoRow(
+                  rows[i][0],
+                  rows[i][1],
+                  showDivider: i != rows.length - 1,
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, {bool showDivider = false}) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 80,
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.black.withOpacity(0.45),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  value.trim().isNotEmpty ? value : "-",
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (showDivider)
+          Divider(
+            height: 1,
+            thickness: 1,
+            indent: 16,
+            endIndent: 16,
+            color: _accent.withOpacity(0.07),
+          ),
+      ],
     );
   }
 }

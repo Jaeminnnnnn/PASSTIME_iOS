@@ -154,81 +154,86 @@ class _SendPaymentScreenState extends State<SendPaymentScreen> {
               ),
             ),
           ),
-          body: Column(
+          body: Stack(
             children: [
-              Expanded(
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: MediaQuery.of(context).viewInsets.bottom,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.fromLTRB(
-                    16,
-                    16,
-                    16,
-                    16 + MediaQuery.of(context).viewInsets.bottom,
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildInputField(
+                        controller: departmentController,
+                        label: "학과",
+                        hintText: "학과 입력",
+                      ),
+                      const SizedBox(height: 14),
+                      _buildInputField(
+                        controller: studentIdController,
+                        label: "학번",
+                        hintText: "학번 입력",
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: 14),
+                      _buildInputField(
+                        controller: nameController,
+                        label: "이름",
+                        hintText: "이름 입력",
+                      ),
+                      const SizedBox(height: 14),
+                      _buildInputField(
+                        controller: phoneController,
+                        label: "전화번호",
+                        hintText: "전화번호 입력",
+                        keyboardType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: 14),
+                      _buildEventDropdown(),
+                      const SizedBox(height: 14),
+                      _buildImagePickerField(),
+                    ],
                   ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildInputField(
-                          controller: departmentController,
-                          label: "학과",
-                          hintText: "학과 입력",
-                        ),
-                        const SizedBox(height: 14),
-                        _buildInputField(
-                          controller: studentIdController,
-                          label: "학번",
-                          hintText: "학번 입력",
-                          keyboardType: TextInputType.number,
-                        ),
-                        const SizedBox(height: 14),
-                        _buildInputField(
-                          controller: nameController,
-                          label: "이름",
-                          hintText: "이름 입력",
-                        ),
-                        const SizedBox(height: 14),
-                        _buildInputField(
-                          controller: phoneController,
-                          label: "전화번호",
-                          hintText: "전화번호 입력",
-                          keyboardType: TextInputType.phone,
-                        ),
-                        const SizedBox(height: 14),
-                        _buildEventDropdown(),
-                        const SizedBox(height: 14),
-                        _buildImagePickerField(),
-                      ],
-                    ),
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  16.0,
-                  0,
-                  16.0,
-                  MediaQuery.of(context).viewPadding.bottom > 0
-                      ? 16.0
-                      : 0.0, // 👈 조건부 여백
-                ),
-                child: SafeArea(
-                  child: ElevatedButton(
-                    onPressed: _isFormValid() ? _showConfirmationDialog : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFC10230),
-                      disabledBackgroundColor:
-                          const Color(0xFFC10230).withOpacity(0.3),
-                      minimumSize: const Size(double.infinity, 55),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    16.0,
+                    0,
+                    16.0,
+                    MediaQuery.of(context).viewPadding.bottom > 0 ? 16.0 : 0.0,
+                  ),
+                  child: SafeArea(
+                    child: ElevatedButton(
+                      onPressed:
+                          _isFormValid() ? _showConfirmationDialog : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFC10230),
+                        disabledBackgroundColor:
+                            const Color(0xFFC10230).withOpacity(0.3),
+                        minimumSize: const Size(double.infinity, 55),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        foregroundColor: Colors.white,
+                        disabledForegroundColor: Colors.white.withOpacity(0.7),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      foregroundColor: Colors.white,
-                      disabledForegroundColor: Colors.white.withOpacity(0.7),
-                    ),
-                    child: const Text(
-                      '완료',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      child: const Text(
+                        '완료',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ),

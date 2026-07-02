@@ -79,19 +79,36 @@ class _RefundScreenState extends State<RefundScreen> {
           }
 
           final data = snapshot.data!;
+          String v(String key) => (data[key] ?? "").toString();
 
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _buildDetailRow("이름", data["name"]),
-                _buildDetailRow("학번", data["studentId"]),
-                _buildDetailRow("행사", data["eventName"]),
-                _buildDetailRow("환불 사유", data["refundReason"]),
-                _buildDetailRow("방문 가능 날짜", data["visitDate"]),
-                _buildDetailRow("방문 가능 시간", data["visitTime"]),
-                _buildDetailRow("상태", data["refundPermissionStatus"]),
+                _buildStatusBadge(v("refundPermissionStatus")),
+                const SizedBox(height: 20),
+                _buildSection("신청자 정보", [
+                  ["이름", v("name")],
+                  ["학번", v("studentId")],
+                  ["전화번호", v("phone")],
+                ]),
+                const SizedBox(height: 16),
+                _buildSection("환불 정보", [
+                  ["행사", v("eventName")],
+                  ["환불 사유", v("refundReason")],
+                ]),
+                const SizedBox(height: 16),
+                _buildSection("환불 계좌", [
+                  ["은행명", v("bankName")],
+                  ["계좌번호", v("accountNumber")],
+                ]),
+                const SizedBox(height: 16),
+                _buildSection("방문 가능", [
+                  ["날짜", v("visitDate")],
+                  ["시간", v("visitTime")],
+                ]),
               ],
             ),
           );
@@ -100,38 +117,124 @@ class _RefundScreenState extends State<RefundScreen> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF334D61).withOpacity(0.05),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 1,
-            child: Text(
+  static const _accent = Color(0xFF334D61);
+
+  Widget _buildStatusBadge(String rawStatus) {
+    final String status = rawStatus.trim();
+    final bool isApproved = status == "true" ||
+        status.contains("승인") ||
+        status.contains("완료");
+
+    final Color color = isApproved ? const Color(0xFF2E7D32) : _accent;
+    final IconData icon =
+        isApproved ? Icons.check_circle_rounded : Icons.hourglass_top_rounded;
+    final String label = isApproved ? "환불 완료" : "환불 대기";
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 6),
+            Text(
               label,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.black,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              value.isNotEmpty ? value : "-",
               style: TextStyle(
-                fontSize: 16,
-                color: Colors.black.withOpacity(0.5),
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: color,
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildSection(String title, List<List<String>> rows) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: _accent.withOpacity(0.55),
+              letterSpacing: 0.2,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _accent.withOpacity(0.08)),
+          ),
+          child: Column(
+            children: [
+              for (int i = 0; i < rows.length; i++)
+                _buildInfoRow(
+                  rows[i][0],
+                  rows[i][1],
+                  showDivider: i != rows.length - 1,
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, {bool showDivider = false}) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 80,
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.black.withOpacity(0.45),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  value.trim().isNotEmpty ? value : "-",
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (showDivider)
+          Divider(
+            height: 1,
+            thickness: 1,
+            indent: 16,
+            endIndent: 16,
+            color: _accent.withOpacity(0.07),
+          ),
+      ],
     );
   }
 }

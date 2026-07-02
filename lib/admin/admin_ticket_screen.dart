@@ -10,6 +10,7 @@ import 'package:passtime/cookiejar_singleton.dart';
 import 'package:passtime/utils/affiliation_api_parser.dart';
 import 'package:passtime/widgets/admin_ticket_card.dart';
 import 'package:passtime/admin/send_payment_ticket_list_screen.dart';
+import 'package:passtime/admin/request_refund_ticket_list_screen.dart';
 import 'package:passtime/screens/ticket_screen.dart';
 
 class AdminTicketScreen extends StatefulWidget {
@@ -98,6 +99,34 @@ class _AdminTicketScreenState extends State<AdminTicketScreen> {
     );
   }
 
+  Future<void> _navigateToRefundList(Map<String, dynamic> ticket) async {
+    if (_affiliations.isEmpty) {
+      await _fetchAffiliations();
+    }
+
+    final affiliationName = ticket['affiliation']?.toString() ?? '';
+    final affiliationId = _findAffiliationId(affiliationName);
+
+    if (affiliationId == null || affiliationId.isEmpty) {
+      showCupertinoErrorDialog('소속 정보를 찾을 수 없습니다.');
+      return;
+    }
+
+    if (!mounted) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RequestRefundTicketListScreen(
+          ticketId: ticket['ticketId']!.toString(),
+          affiliationId: affiliationId,
+          eventTitle: ticket['title']!.toString(),
+          affiliationName: affiliationName,
+        ),
+      ),
+    );
+  }
+
   Future<List<Map<String, dynamic>>> fetchTickets() async {
     final url = Uri.parse('${dotenv.env['API_BASE_URL']}/ticket/manageList');
     final uri = Uri.parse(dotenv.env['API_BASE_URL'] ?? '');
@@ -131,6 +160,7 @@ class _AdminTicketScreenState extends State<AdminTicketScreen> {
               'eventCode': item['eventCode']?.toString() ?? '',
               'totalCount': _parseCount(item['totalCount']),
               'pendingCount': _parseCount(item['pendingCount']),
+              'refundPendingCount': _parseCount(item['refundPendingCount']),
             };
           }).toList();
         } else {
@@ -307,7 +337,10 @@ class _AdminTicketScreenState extends State<AdminTicketScreen> {
                                 eventCode: ticket['eventCode']?.toString() ?? '',
                                 totalCount: _parseCount(ticket['totalCount']),
                                 pendingCount: _parseCount(ticket['pendingCount']),
+                                refundPendingCount:
+                                    _parseCount(ticket['refundPendingCount']),
                                 onPaymentTap: () => _navigateToPaymentList(ticket),
+                                onRefundTap: () => _navigateToRefundList(ticket),
                                 onEdit: () async {
                                   final result = await Navigator.push(
                                     context,

@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:passtime/screens/ticket_screen.dart';
 import '../cookiejar_singleton.dart';
-import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 
 class MaskedInputController extends TextEditingController {
   @override
@@ -47,6 +46,8 @@ class _RequestRefundScreenState extends State<RequestRefundScreen> {
 
   final TextEditingController refundReasonController = TextEditingController();
   final MaskedInputController phoneNumberController = MaskedInputController();
+  final TextEditingController bankNameController = TextEditingController();
+  final TextEditingController accountNumberController = TextEditingController();
 
   final Dio _dio = Dio();
 
@@ -57,14 +58,20 @@ class _RequestRefundScreenState extends State<RequestRefundScreen> {
     _fetchTickets();
     refundReasonController.addListener(_updateButtonState);
     phoneNumberController.addListener(_updateButtonState);
+    bankNameController.addListener(_updateButtonState);
+    accountNumberController.addListener(_updateButtonState);
   }
 
   @override
   void dispose() {
     refundReasonController.removeListener(_updateButtonState);
     phoneNumberController.removeListener(_updateButtonState);
+    bankNameController.removeListener(_updateButtonState);
+    accountNumberController.removeListener(_updateButtonState);
     refundReasonController.dispose();
     phoneNumberController.dispose();
+    bankNameController.dispose();
+    accountNumberController.dispose();
     super.dispose();
   }
 
@@ -116,6 +123,8 @@ class _RequestRefundScreenState extends State<RequestRefundScreen> {
     final body = {
       "phone": phoneNumberController.text,
       "refundReason": refundReasonController.text,
+      "bankName": bankNameController.text,
+      "accountNumber": accountNumberController.text,
       "visitDate": selectedDate!,
       "visitTime": selectedTime!,
       "ticketId": selectedTicketId!,
@@ -167,7 +176,9 @@ class _RequestRefundScreenState extends State<RequestRefundScreen> {
         refundReasonController.text.isNotEmpty &&
         selectedDate != null &&
         selectedTime != null &&
-        phoneNumberController.text.isNotEmpty;
+        phoneNumberController.text.isNotEmpty &&
+        bankNameController.text.isNotEmpty &&
+        accountNumberController.text.isNotEmpty;
   }
 
   @override
@@ -196,17 +207,18 @@ class _RequestRefundScreenState extends State<RequestRefundScreen> {
                 color: Colors.black, fontSize: 22, fontWeight: FontWeight.bold),
           ),
         ),
-        body: Column(
+        body: Stack(
           children: [
-            Expanded(
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: MediaQuery.of(context).viewInsets.bottom,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.fromLTRB(
-                  16,
-                  16,
-                  16,
-                  16 + MediaQuery.of(context).viewInsets.bottom,
-                ),
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -226,41 +238,56 @@ class _RequestRefundScreenState extends State<RequestRefundScreen> {
                         label: "전화번호",
                         hintText: "전화번호 입력",
                         keyboardType: TextInputType.phone),
+                    const SizedBox(height: 14),
+                    _buildInputField(
+                        controller: bankNameController,
+                        label: "은행명",
+                        hintText: "은행명 입력 (예: 국민은행)"),
+                    const SizedBox(height: 14),
+                    _buildInputField(
+                        controller: accountNumberController,
+                        label: "계좌번호",
+                        hintText: "계좌번호 입력 ('-' 없이)",
+                        keyboardType: TextInputType.number),
                     const SizedBox(height: 8),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Text(
-                        "현금 수령을 해야 하므로 방문이 필요합니다.",
+                        "입력하신 계좌로 환불되며, 경우에 따라 직접 수령이 필요할 수 있습니다.",
                         style: TextStyle(
                             color: const Color(0xFFC10230).withOpacity(0.5),
                             fontSize: 13),
                       ),
                     ),
-                    const SizedBox(height: 24),
                   ],
                 ),
               ),
             ),
-            SafeArea(
-              top: false,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(16, 0, 16, bottomPadding),
-                child: ElevatedButton(
-                  onPressed: _isFormValid() ? _submitRefundRequest : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFC10230),
-                    disabledBackgroundColor:
-                        const Color(0xFFC10230).withOpacity(0.3),
-                    minimumSize: const Size(double.infinity, 55),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4)),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    foregroundColor: Colors.white,
-                    disabledForegroundColor: Colors.white.withOpacity(0.7),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(16, 0, 16, bottomPadding),
+                  child: ElevatedButton(
+                    onPressed: _isFormValid() ? _submitRefundRequest : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFC10230),
+                      disabledBackgroundColor:
+                          const Color(0xFFC10230).withOpacity(0.3),
+                      minimumSize: const Size(double.infinity, 55),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4)),
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      foregroundColor: Colors.white,
+                      disabledForegroundColor: Colors.white.withOpacity(0.7),
+                    ),
+                    child: const Text("신청",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
                   ),
-                  child: const Text("신청",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
               ),
             ),
@@ -344,19 +371,57 @@ class _RequestRefundScreenState extends State<RequestRefundScreen> {
     );
   }
 
+  DateTime _parseSelectedDate() {
+    if (selectedDate != null) {
+      final match =
+          RegExp(r'(\d{4})\.(\d{2})\.(\d{2})').firstMatch(selectedDate!);
+      if (match != null) {
+        return DateTime(
+          int.parse(match.group(1)!),
+          int.parse(match.group(2)!),
+          int.parse(match.group(3)!),
+        );
+      }
+    }
+    return DateTime.now();
+  }
+
   Widget _buildDatePickerField() {
     return GestureDetector(
-      onTap: () {
-        DatePicker.showDatePicker(
-          context,
-          showTitleActions: true,
-          minTime: DateTime(1900, 1, 1),
-          maxTime: DateTime(2100, 1, 1),
-          onConfirm: (date) => setState(() => selectedDate =
-              "${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}(${_getKoreanWeekday(date.weekday)})"),
-          currentTime: DateTime.now(),
-          locale: LocaleType.ko,
+      onTap: () async {
+        const Color accent = Color(0xFFC10230);
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: _parseSelectedDate(),
+          firstDate: DateTime(1900, 1, 1),
+          lastDate: DateTime(2100, 1, 1),
+          helpText: "방문 가능 날짜 선택",
+          cancelText: "취소",
+          confirmText: "확인",
+          builder: (context, child) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: const ColorScheme.light(
+                  primary: accent,
+                  onPrimary: Colors.white,
+                  surface: Colors.white,
+                  onSurface: Colors.black,
+                ),
+                dialogBackgroundColor: Colors.white,
+                textButtonTheme: TextButtonThemeData(
+                  style: TextButton.styleFrom(foregroundColor: accent),
+                ),
+              ),
+              child: child!,
+            );
+          },
         );
+        if (picked != null) {
+          setState(() {
+            selectedDate =
+                "${picked.year}.${picked.month.toString().padLeft(2, '0')}.${picked.day.toString().padLeft(2, '0')}(${_getKoreanWeekday(picked.weekday)})";
+          });
+        }
       },
       child: _buildDisplayField(
           label: "방문 가능 날짜",
@@ -365,18 +430,168 @@ class _RequestRefundScreenState extends State<RequestRefundScreen> {
     );
   }
 
+  TimeOfDay _parseTimeOfDay(String? value) {
+    if (value != null && value.contains(':')) {
+      final parts = value.split(':');
+      final hour = int.tryParse(parts[0]);
+      final minute = int.tryParse(parts[1]);
+      if (hour != null && minute != null) {
+        return TimeOfDay(hour: hour, minute: minute);
+      }
+    }
+    return TimeOfDay.now();
+  }
+
+  Future<TimeOfDay?> _showStyledTimePicker(TimeOfDay initialTime) async {
+    const Color accent = Color(0xFFC10230);
+    int tempHour = initialTime.hour;
+    int tempMinute = initialTime.minute;
+    TimeOfDay? result;
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Colors.black.withOpacity(0.08)),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CupertinoButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          "취소",
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                        ),
+                      ),
+                      const Text(
+                        "시간 선택",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      CupertinoButton(
+                        onPressed: () {
+                          result = TimeOfDay(
+                            hour: tempHour,
+                            minute: tempMinute,
+                          );
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          "확인",
+                          style: TextStyle(
+                            color: accent,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 220,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 70,
+                        child: CupertinoPicker(
+                          scrollController: FixedExtentScrollController(
+                            initialItem: tempHour,
+                          ),
+                          itemExtent: 40,
+                          onSelectedItemChanged: (i) => tempHour = i,
+                          children: List.generate(
+                            24,
+                            (i) => Center(
+                              child: Text(
+                                i.toString().padLeft(2, '0'),
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 28),
+                        child: Text(
+                          ":",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 70,
+                        child: CupertinoPicker(
+                          scrollController: FixedExtentScrollController(
+                            initialItem: tempMinute,
+                          ),
+                          itemExtent: 40,
+                          onSelectedItemChanged: (i) => tempMinute = i,
+                          children: List.generate(
+                            60,
+                            (i) => Center(
+                              child: Text(
+                                i.toString().padLeft(2, '0'),
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    return result;
+  }
+
   Widget _buildTimePickerField() {
     return GestureDetector(
-      onTap: () {
-        DatePicker.showTimePicker(
-          context,
-          showTitleActions: true,
-          showSecondsColumn: false,
-          onConfirm: (date) => setState(() => selectedTime =
-              "${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}"),
-          currentTime: DateTime.now(),
-          locale: LocaleType.ko,
+      onTap: () async {
+        final picked = await _showStyledTimePicker(
+          _parseTimeOfDay(selectedTime),
         );
+        if (picked != null) {
+          setState(() {
+            selectedTime =
+                "${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}";
+          });
+        }
       },
       child: _buildDisplayField(
           label: "방문 가능 시간",
