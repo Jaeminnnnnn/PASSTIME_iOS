@@ -129,7 +129,7 @@ class _TicketProduceScreenState extends State<TicketProduceScreen> {
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Scaffold(
-          resizeToAvoidBottomInset: false,
+          resizeToAvoidBottomInset: true,
           backgroundColor: Colors.white,
           appBar: AppBar(
             toolbarHeight: 70,
@@ -166,13 +166,13 @@ class _TicketProduceScreenState extends State<TicketProduceScreen> {
                   bottom: true, // 하단 안전 영역 확보
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
                     padding: EdgeInsets.fromLTRB(
                       16,
                       16,
                       16,
-                      16 +
-                          MediaQuery.of(context).padding.bottom +
-                          MediaQuery.of(context).viewInsets.bottom,
+                      16 + MediaQuery.of(context).padding.bottom,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

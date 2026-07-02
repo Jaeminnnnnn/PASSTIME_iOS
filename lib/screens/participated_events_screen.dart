@@ -155,16 +155,23 @@ class _ParticipatedEventsScreenState extends State<ParticipatedEventsScreen> {
 
   Widget _buildEventCard(Map<String, dynamic> event) {
     final status = event['status']?.toString() ?? '';
+    final fromHistory = event['fromHistory'] == true;
+    final startTime = event['eventStartTime']?.toString() ?? '';
+    final endTime = event['eventEndTime']?.toString() ?? '';
+    final timeRange =
+        endTime.isNotEmpty ? '$startTime ~ $endTime' : startTime;
+
     return TicketCard(
       ticketId: event['ticketId']?.toString() ?? '',
       title: event['eventTitle']?.toString() ?? '',
-      dateTime: '${event['eventDay']} • ${event['eventStartTime']}',
+      dateTime: '${event['eventDay']} • $timeRange',
       location: event['eventPlace']?.toString() ?? '',
       affiliation: event['affiliation']?.toString() ?? '',
       status: status,
       statusColor: const Color(0xFF9E9E9E),
       isParticipatedEvent: true,
       participantCount: _parseParticipantCount(event['participantCount']),
+      isHistory: fromHistory,
     );
   }
 

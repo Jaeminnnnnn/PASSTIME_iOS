@@ -13,6 +13,7 @@ class TicketCard extends StatelessWidget {
   final Color statusColor;
   final bool isParticipatedEvent;
   final int? participantCount;
+  final bool isHistory;
 
   const TicketCard({
     super.key,
@@ -25,10 +26,16 @@ class TicketCard extends StatelessWidget {
     required this.statusColor,
     this.isParticipatedEvent = false,
     this.participantCount,
+    this.isHistory = false,
   });
 
-  bool get _isClickable =>
-      isParticipatedEvent ? ticketId.isNotEmpty : status != '사용 불가';
+  bool get _isClickable {
+    if (isParticipatedEvent) {
+      // 이력(보관된 과거 행사)도 조회 전용 상세를 지원함
+      return ticketId.isNotEmpty;
+    }
+    return status != '사용 불가';
+  }
 
   Color get _accentColor {
     if (isParticipatedEvent) return const Color(0xFF9E9E9E);
@@ -97,7 +104,7 @@ class TicketCard extends StatelessWidget {
             children: [
               if (isParticipatedEvent) ...[
                 Text(
-                  '참여 기록',
+                  isHistory ? '지난 행사 · 보관됨' : '참여 기록',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
