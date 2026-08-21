@@ -138,14 +138,6 @@ class _TicketScreenState extends State<TicketScreen> {
     }
   }
 
-  Future<void> _refreshTickets() async {
-    setState(() {
-      _ticketsFuture = fetchTickets();
-      _eventCountFuture = fetchEventCount();
-    });
-    await Future.wait([_ticketsFuture, _eventCountFuture]);
-  }
-
   Color _getStatusColor(String status) {
     switch (status) {
       case '사용 가능':
@@ -349,8 +341,7 @@ class _TicketScreenState extends State<TicketScreen> {
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
-                              color:
-                                  const Color(0xFF334D61).withOpacity(0.9),
+                              color: const Color(0xFF334D61).withOpacity(0.9),
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -359,8 +350,7 @@ class _TicketScreenState extends State<TicketScreen> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color:
-                                  const Color(0xFF334D61).withOpacity(0.45),
+                              color: const Color(0xFF334D61).withOpacity(0.45),
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -371,8 +361,7 @@ class _TicketScreenState extends State<TicketScreen> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color:
-                                  const Color(0xFF334D61).withOpacity(0.65),
+                              color: const Color(0xFF334D61).withOpacity(0.65),
                               height: 1.35,
                             ),
                           ),
@@ -573,15 +562,9 @@ class _TicketScreenState extends State<TicketScreen> {
     );
   }
 
-  ScrollPhysics _scrollPhysicsForTicketCount(int ticketCount) {
-    return ticketCount <= 1
-        ? const NeverScrollableScrollPhysics()
-        : const AlwaysScrollableScrollPhysics();
-  }
-
   Widget _buildEmptyState() {
     return ListView(
-      physics: _scrollPhysicsForTicketCount(0),
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       children: [
         const SizedBox(height: 12),
@@ -629,7 +612,7 @@ class _TicketScreenState extends State<TicketScreen> {
     final isHeroLayout = tickets.length <= 2;
 
     return ListView(
-      physics: _scrollPhysicsForTicketCount(tickets.length),
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       children: [
         const SizedBox(height: 12),
@@ -691,29 +674,24 @@ class _TicketScreenState extends State<TicketScreen> {
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F6F7),
         appBar: const CustomAppBar(title: '입장권'),
-        body: RefreshIndicator(
-          color: Colors.black,
-          backgroundColor: Colors.white,
-          onRefresh: _refreshTickets,
-          child: FutureBuilder<List<Map<String, dynamic>>>(
-            future: _ticketsFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
+        body: FutureBuilder<List<Map<String, dynamic>>>(
+          future: _ticketsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-              if (snapshot.hasError) {
-                return _buildEmptyState();
-              }
+            if (snapshot.hasError) {
+              return _buildEmptyState();
+            }
 
-              final tickets = snapshot.data ?? [];
-              if (tickets.isEmpty) {
-                return _buildEmptyState();
-              }
+            final tickets = snapshot.data ?? [];
+            if (tickets.isEmpty) {
+              return _buildEmptyState();
+            }
 
-              return _buildTicketContent(tickets);
-            },
-          ),
+            return _buildTicketContent(tickets);
+          },
         ),
         floatingActionButton: const MenuButton(),
       ),
