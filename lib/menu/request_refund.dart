@@ -183,12 +183,9 @@ class _RequestRefundScreenState extends State<RequestRefundScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.of(context).viewPadding.bottom + 16;
-
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        resizeToAvoidBottomInset: false,
         backgroundColor: const Color(0xFFF5F6F7),
         appBar: AppBar(
           toolbarHeight: 70,
@@ -207,91 +204,72 @@ class _RequestRefundScreenState extends State<RequestRefundScreen> {
                 color: Colors.black, fontSize: 22, fontWeight: FontWeight.bold),
           ),
         ),
-        body: Stack(
-          children: [
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildEventDropdown(),
-                    const SizedBox(height: 14),
-                    _buildInputField(
-                        controller: refundReasonController,
-                        label: "환불 사유",
-                        hintText: "환불 사유 입력"),
-                    const SizedBox(height: 14),
-                    _buildDatePickerField(),
-                    const SizedBox(height: 14),
-                    _buildTimePickerField(),
-                    const SizedBox(height: 14),
-                    _buildInputField(
-                        controller: phoneNumberController,
-                        label: "전화번호",
-                        hintText: "전화번호 입력",
-                        keyboardType: TextInputType.phone),
-                    const SizedBox(height: 14),
-                    _buildInputField(
-                        controller: bankNameController,
-                        label: "은행명",
-                        hintText: "은행명 입력 (예: 국민은행)"),
-                    const SizedBox(height: 14),
-                    _buildInputField(
-                        controller: accountNumberController,
-                        label: "계좌번호",
-                        hintText: "계좌번호 입력 ('-' 없이)",
-                        keyboardType: TextInputType.number),
-                    const SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        "입력하신 계좌로 환불되며, 경우에 따라 직접 수령이 필요할 수 있습니다.",
-                        style: TextStyle(
-                            color: const Color(0xFFC10230).withOpacity(0.5),
-                            fontSize: 13),
-                      ),
-                    ),
-                  ],
+        body: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildEventDropdown(),
+              const SizedBox(height: 14),
+              _buildInputField(
+                  controller: refundReasonController,
+                  label: "환불 사유",
+                  hintText: "환불 사유 입력"),
+              const SizedBox(height: 14),
+              _buildDatePickerField(),
+              const SizedBox(height: 14),
+              _buildTimePickerField(),
+              const SizedBox(height: 14),
+              _buildInputField(
+                  controller: phoneNumberController,
+                  label: "전화번호",
+                  hintText: "전화번호 입력",
+                  keyboardType: TextInputType.phone),
+              const SizedBox(height: 14),
+              _buildInputField(
+                  controller: bankNameController,
+                  label: "은행명",
+                  hintText: "은행명 입력 (예: 국민은행)"),
+              const SizedBox(height: 14),
+              _buildInputField(
+                  controller: accountNumberController,
+                  label: "계좌번호",
+                  hintText: "계좌번호 입력 ('-' 없이)",
+                  keyboardType: TextInputType.number),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  "입력하신 계좌로 환불되며, 경우에 따라 직접 수령이 필요할 수 있습니다.",
+                  style: TextStyle(
+                      color: const Color(0xFFC10230).withOpacity(0.5),
+                      fontSize: 13),
                 ),
               ),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: SafeArea(
-                top: false,
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(16, 0, 16, bottomPadding),
-                  child: ElevatedButton(
-                    onPressed: _isFormValid() ? _submitRefundRequest : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFC10230),
-                      disabledBackgroundColor:
-                          const Color(0xFFC10230).withOpacity(0.3),
-                      minimumSize: const Size(double.infinity, 55),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4)),
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      foregroundColor: Colors.white,
-                      disabledForegroundColor: Colors.white.withOpacity(0.7),
-                    ),
-                    child: const Text("신청",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                  ),
+              const SizedBox(height: 28),
+              ElevatedButton(
+                onPressed: _isFormValid() ? _submitRefundRequest : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFC10230),
+                  disabledBackgroundColor:
+                      const Color(0xFFC10230).withOpacity(0.3),
+                  minimumSize: const Size(double.infinity, 55),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4)),
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  foregroundColor: Colors.white,
+                  disabledForegroundColor: Colors.white.withOpacity(0.7),
+                ),
+                child: const Text(
+                  "신청",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -386,36 +364,93 @@ class _RequestRefundScreenState extends State<RequestRefundScreen> {
     return DateTime.now();
   }
 
+  Future<DateTime?> _showStyledDatePicker(DateTime initialDate) async {
+    const Color accent = Color(0xFFC10230);
+    DateTime tempDate = initialDate;
+    DateTime? result;
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Colors.black.withOpacity(0.08)),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CupertinoButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          "취소",
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                        ),
+                      ),
+                      const Text(
+                        "날짜 선택",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      CupertinoButton(
+                        onPressed: () {
+                          result = tempDate;
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          "확인",
+                          style: TextStyle(
+                            color: accent,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 220,
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.date,
+                    initialDateTime: initialDate,
+                    minimumDate: DateTime(1900, 1, 1),
+                    maximumDate: DateTime(2100, 1, 1),
+                    onDateTimeChanged: (DateTime newDate) {
+                      tempDate = newDate;
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    return result;
+  }
+
   Widget _buildDatePickerField() {
     return GestureDetector(
       onTap: () async {
-        const Color accent = Color(0xFFC10230);
-        final picked = await showDatePicker(
-          context: context,
-          initialDate: _parseSelectedDate(),
-          firstDate: DateTime(1900, 1, 1),
-          lastDate: DateTime(2100, 1, 1),
-          helpText: "방문 가능 날짜 선택",
-          cancelText: "취소",
-          confirmText: "확인",
-          builder: (context, child) {
-            return Theme(
-              data: Theme.of(context).copyWith(
-                colorScheme: const ColorScheme.light(
-                  primary: accent,
-                  onPrimary: Colors.white,
-                  surface: Colors.white,
-                  onSurface: Colors.black,
-                ),
-                dialogBackgroundColor: Colors.white,
-                textButtonTheme: TextButtonThemeData(
-                  style: TextButton.styleFrom(foregroundColor: accent),
-                ),
-              ),
-              child: child!,
-            );
-          },
-        );
+        final picked = await _showStyledDatePicker(_parseSelectedDate());
         if (picked != null) {
           setState(() {
             selectedDate =

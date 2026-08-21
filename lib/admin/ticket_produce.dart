@@ -67,15 +67,12 @@ class _TicketProduceScreenState extends State<TicketProduceScreen> {
     debugPrint('API URL: ${dotenv.env['API_BASE_URL']}');
   }
 
-  // [수정 2] _fetchAffiliations 함수 전체를 새 로직으로 교체합니다.
   Future<void> _fetchAffiliations() async {
-    // 1. URL 변경
     final url =
         Uri.parse('${dotenv.env['API_BASE_URL']}/user/adminAffilliation/list');
     final uri = Uri.parse(dotenv.env['API_BASE_URL'] ?? '');
 
     try {
-      // 2. 쿠키 헤더 추가
       final cookies = await CookieJarSingleton().cookieJar.loadForRequest(uri);
       final cookieHeader = cookies.isNotEmpty
           ? cookies.map((cookie) => '${cookie.name}=${cookie.value}').join('; ')
@@ -129,7 +126,6 @@ class _TicketProduceScreenState extends State<TicketProduceScreen> {
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Scaffold(
-          resizeToAvoidBottomInset: true,
           backgroundColor: Colors.white,
           appBar: AppBar(
             toolbarHeight: 70,
@@ -162,78 +158,68 @@ class _TicketProduceScreenState extends State<TicketProduceScreen> {
                 color: const Color(0xFF334D61).withOpacity(0.05),
               ),
               Expanded(
-                child: SafeArea(
-                  bottom: true, // 하단 안전 영역 확보
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    keyboardDismissBehavior:
-                        ScrollViewKeyboardDismissBehavior.onDrag,
-                    padding: EdgeInsets.fromLTRB(
-                      16,
-                      16,
-                      16,
-                      16 + MediaQuery.of(context).padding.bottom,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildAffiliationDropdown(),
-                        const SizedBox(height: 14),
-                        _buildInputField(
-                            controller: _titleController,
-                            label: "제목",
-                            hintText: "제목 입력"),
-                        const SizedBox(height: 14),
-                        _buildDatePickerField(),
-                        const SizedBox(height: 14),
-                        _buildStartTimePickerField(),
-                        const SizedBox(height: 14),
-                        _buildPlaceSearchField(),
-                        const SizedBox(height: 14),
-                        _buildKakaoMap(),
-                        const SizedBox(height: 14),
-                        _buildInputField(
-                            controller: _placeCommentController,
-                            label: "장소 설명",
-                            hintText: "장소 설명 입력"),
-                        const SizedBox(height: 14),
-                        _buildInputField(
-                            controller: _eventCommentController,
-                            label: "관리자 행사 멘트",
-                            hintText: "관리자 행사 멘트 입력"),
-                        const SizedBox(height: 14),
-                        _buildInputField(
-                            controller: _eventCodeController,
-                            label: "행사 코드",
-                            hintText: "행사 코드 입력"),
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed:
-                              _isFormValid() ? _showConfirmationDialog : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _isFormValid()
-                                ? const Color(0xFF334D61)
-                                : const Color(0xFF334D61).withOpacity(0.3),
-                            disabledBackgroundColor:
-                                const Color(0xFF334D61).withOpacity(0.3),
-                            minimumSize: const Size(double.infinity, 55),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 15),
-                            foregroundColor: Colors.white,
-                            disabledForegroundColor:
-                                Colors.white.withOpacity(0.7),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildAffiliationDropdown(),
+                      const SizedBox(height: 14),
+                      _buildInputField(
+                          controller: _titleController,
+                          label: "제목",
+                          hintText: "제목 입력"),
+                      const SizedBox(height: 14),
+                      _buildDatePickerField(),
+                      const SizedBox(height: 14),
+                      _buildStartTimePickerField(),
+                      const SizedBox(height: 14),
+                      _buildPlaceSearchField(),
+                      const SizedBox(height: 14),
+                      _buildKakaoMap(),
+                      const SizedBox(height: 14),
+                      _buildInputField(
+                          controller: _placeCommentController,
+                          label: "장소 설명",
+                          hintText: "장소 설명 입력"),
+                      const SizedBox(height: 14),
+                      _buildInputField(
+                          controller: _eventCommentController,
+                          label: "관리자 행사 멘트",
+                          hintText: "관리자 행사 멘트 입력"),
+                      const SizedBox(height: 14),
+                      _buildInputField(
+                          controller: _eventCodeController,
+                          label: "행사 코드",
+                          hintText: "행사 코드 입력"),
+                      const SizedBox(height: 28),
+                      ElevatedButton(
+                        onPressed:
+                            _isFormValid() ? _showConfirmationDialog : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF334D61),
+                          disabledBackgroundColor:
+                              const Color(0xFF334D61).withOpacity(0.3),
+                          minimumSize: const Size(double.infinity, 55),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text(
-                            "완료",
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          foregroundColor: Colors.white,
+                          disabledForegroundColor:
+                              Colors.white.withOpacity(0.7),
                         ),
-                        const SizedBox(height: 16),
-                      ],
-                    ),
+                        child: const Text(
+                          "완료",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                   ),
                 ),
               ),
@@ -695,37 +681,94 @@ class _TicketProduceScreenState extends State<TicketProduceScreen> {
     return DateTime.now();
   }
 
+  Future<DateTime?> _showStyledDatePicker(DateTime initialDate) async {
+    const Color accent = Color(0xFFC10230);
+    DateTime tempDate = initialDate;
+    DateTime? result;
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Colors.black.withOpacity(0.08)),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CupertinoButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          "취소",
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                        ),
+                      ),
+                      const Text(
+                        "날짜 선택",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      CupertinoButton(
+                        onPressed: () {
+                          result = tempDate;
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          "확인",
+                          style: TextStyle(
+                            color: accent,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 220,
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.date,
+                    initialDateTime: initialDate,
+                    minimumDate: DateTime(1900, 1, 1),
+                    maximumDate: DateTime(2100, 1, 1),
+                    onDateTimeChanged: (DateTime newDate) {
+                      tempDate = newDate;
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    return result;
+  }
+
   Widget _buildDatePickerField() {
     final bool hasValue = selectedDate != null;
     return GestureDetector(
       onTap: () async {
-        const Color accent = Color(0xFFC10230);
-        final picked = await showDatePicker(
-          context: context,
-          initialDate: _parseSelectedDate(),
-          firstDate: DateTime(1900, 1, 1),
-          lastDate: DateTime(2100, 1, 1),
-          helpText: "날짜 선택",
-          cancelText: "취소",
-          confirmText: "확인",
-          builder: (context, child) {
-            return Theme(
-              data: Theme.of(context).copyWith(
-                colorScheme: const ColorScheme.light(
-                  primary: accent,
-                  onPrimary: Colors.white,
-                  surface: Colors.white,
-                  onSurface: Colors.black,
-                ),
-                dialogBackgroundColor: Colors.white,
-                textButtonTheme: TextButtonThemeData(
-                  style: TextButton.styleFrom(foregroundColor: accent),
-                ),
-              ),
-              child: child!,
-            );
-          },
-        );
+        final picked = await _showStyledDatePicker(_parseSelectedDate());
         if (picked != null) {
           setState(() {
             selectedDate =

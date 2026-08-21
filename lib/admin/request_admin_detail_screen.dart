@@ -135,9 +135,7 @@ class _RequestAdminDetailScreenState extends State<RequestAdminDetailScreen> {
       builder: (context) => CupertinoAlertDialog(
         title: Text(isApprove ? '승인 확인' : '미승인 확인'),
         content: Text(
-          isApprove
-              ? '이 신청을 승인하시겠습니까?'
-              : '이 신청을 미승인 처리하시겠습니까?',
+          isApprove ? '이 신청을 승인하시겠습니까?' : '이 신청을 미승인 처리하시겠습니까?',
         ),
         actions: [
           CupertinoDialogAction(
@@ -335,122 +333,92 @@ class _RequestAdminDetailScreenState extends State<RequestAdminDetailScreen> {
                     final bool isProcessed =
                         detail.isApproved || detail.isRejected;
 
-                    return Stack(
-                      children: [
-                        Positioned(
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: MediaQuery.of(context).viewInsets.bottom,
-                          child: SingleChildScrollView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            keyboardDismissBehavior:
-                                ScrollViewKeyboardDismissBehavior.onDrag,
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildInfoContainer(
-                                    label: "신청 유형",
-                                    value: detail.requestTypeLabel),
-                                const SizedBox(height: 16),
-                                _buildInfoContainer(
-                                    label: "이름", value: detail.name),
-                                const SizedBox(height: 16),
-                                _buildInfoContainer(
-                                    label: "학번", value: detail.studentId),
-                                const SizedBox(height: 16),
-                                _buildInfoContainer(
-                                    label: "전화번호", value: detail.phone),
-                                const SizedBox(height: 16),
-                                _buildInfoContainer(
-                                    label: "소속", value: detail.affiliationName),
-                                if (detail.introduction.isNotEmpty) ...[
-                                  const SizedBox(height: 16),
-                                  _buildInfoContainer(
-                                    label: "소속 소개",
-                                    value: detail.introduction,
-                                  ),
-                                ],
-                                const SizedBox(height: 16),
-                                _buildInfoContainer(
-                                  label: "상태",
-                                  value: detail.statusLabel.isNotEmpty
-                                      ? detail.statusLabel
-                                      : detail.status,
-                                ),
-                                const SizedBox(height: 16),
-                                _buildApprovalToggle(isProcessed: isProcessed),
-                                if (!_isApproveSelected) ...[
-                                  const SizedBox(height: 12),
-                                  _buildCommentField(isProcessed: isProcessed),
-                                ],
-                              ],
+                    return SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildInfoContainer(
+                              label: "신청 유형", value: detail.requestTypeLabel),
+                          const SizedBox(height: 16),
+                          _buildInfoContainer(label: "이름", value: detail.name),
+                          const SizedBox(height: 16),
+                          _buildInfoContainer(
+                              label: "학번", value: detail.studentId),
+                          const SizedBox(height: 16),
+                          _buildInfoContainer(
+                              label: "전화번호", value: detail.phone),
+                          const SizedBox(height: 16),
+                          _buildInfoContainer(
+                              label: "소속", value: detail.affiliationName),
+                          if (detail.introduction.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            _buildInfoContainer(
+                              label: "소속 소개",
+                              value: detail.introduction,
                             ),
+                          ],
+                          const SizedBox(height: 16),
+                          _buildInfoContainer(
+                            label: "상태",
+                            value: detail.statusLabel.isNotEmpty
+                                ? detail.statusLabel
+                                : detail.status,
                           ),
-                        ),
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          child: _buildBottomSection(detail, isProcessed),
-                        ),
-                      ],
+                          const SizedBox(height: 16),
+                          _buildApprovalToggle(isProcessed: isProcessed),
+                          if (!_isApproveSelected) ...[
+                            const SizedBox(height: 12),
+                            _buildCommentField(isProcessed: isProcessed),
+                          ],
+                          const SizedBox(height: 28),
+                          ElevatedButton(
+                            onPressed: isProcessed || _isSubmitting
+                                ? null
+                                : () => _showSubmitConfirmationDialog(detail),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF334D61),
+                              disabledBackgroundColor:
+                                  const Color(0xFF334D61).withOpacity(0.3),
+                              minimumSize: const Size(double.infinity, 55),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              foregroundColor: Colors.white,
+                              disabledForegroundColor:
+                                  Colors.white.withOpacity(0.7),
+                            ),
+                            child: _isSubmitting
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 3,
+                                    ),
+                                  )
+                                : Text(
+                                    isProcessed
+                                        ? (detail.isApproved ? '승인됨' : '미승인됨')
+                                        : '제출',
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
                     );
                   } else {
                     return const Center(child: Text('데이터가 없습니다.'));
                   }
                 },
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomSection(AffiliationRequest detail, bool isProcessed) {
-    final bottomInset = MediaQuery.of(context).viewPadding.bottom;
-
-    return Padding(
-      padding: EdgeInsets.fromLTRB(16, 0, 16, bottomInset > 0 ? 16 : 0),
-      child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ElevatedButton(
-              onPressed: isProcessed || _isSubmitting
-                  ? null
-                  : () => _showSubmitConfirmationDialog(detail),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF334D61),
-                disabledBackgroundColor:
-                    const Color(0xFF334D61).withOpacity(0.3),
-                minimumSize: const Size(double.infinity, 55),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                foregroundColor: Colors.white,
-                disabledForegroundColor: Colors.white.withOpacity(0.7),
-              ),
-              child: _isSubmitting
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 3,
-                      ),
-                    )
-                  : Text(
-                      isProcessed
-                          ? (detail.isApproved ? '승인됨' : '미승인됨')
-                          : '제출',
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
             ),
           ],
         ),
@@ -515,8 +483,9 @@ class _RequestAdminDetailScreenState extends State<RequestAdminDetailScreen> {
         elevation: 0,
         padding: const EdgeInsets.symmetric(vertical: 14),
         foregroundColor: isSelected ? Colors.white : const Color(0xFF868686),
-        disabledForegroundColor:
-            isSelected ? Colors.white.withOpacity(0.7) : const Color(0xFF868686),
+        disabledForegroundColor: isSelected
+            ? Colors.white.withOpacity(0.7)
+            : const Color(0xFF868686),
       ),
       child: Text(
         label,

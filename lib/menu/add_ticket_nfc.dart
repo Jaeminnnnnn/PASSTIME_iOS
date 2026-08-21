@@ -26,29 +26,36 @@ class _AddTicketNfcScreenState extends State<AddTicketNfcScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    // 화면 이탈 시 남아있는 NFC 세션을 안전하게 종료하여 앱 스토어 심사 리젝 및 먹통 방지
+    NfcManager.instance.stopSession().catchError((_) {});
+    super.dispose();
+  }
+
   Future<void> _startNfcSession() async {
     final isAvailable = await NfcManager.instance.isAvailable();
     print('[NFC] 지원 여부: $isAvailable');
     if (!mounted) return;
 
-    // NFC가 꺼져 있거나 사용할 수 없으면 설정 이동 안내
     if (!isAvailable) {
       _showNfcUnavailableDialog();
       return;
     }
 
-    // Android에서만 대기 팝업 표시
     if (Platform.isAndroid) _showWaitingDialog();
 
     try {
       await NfcManager.instance.startSession(
+        pollingOptions: {
+          NfcPollingOption.iso14443,
+          NfcPollingOption.iso15693,
+        },
         alertMessage: "카드를 태그해주세요",
         onDiscovered: (NfcTag tag) async {
-          // Android 팝업 닫기
           if (Platform.isAndroid && _isDialogShowing) Navigator.pop(context);
           _isDialogShowing = false;
 
-          // Android에서 서버 요청 전 팝업 표시
           if (Platform.isAndroid) _showProcessingDialog();
 
           final ndef = Ndef.from(tag);
@@ -117,7 +124,6 @@ class _AddTicketNfcScreenState extends State<AddTicketNfcScreen> {
             onPressed: () {
               Navigator.pop(dialogContext);
               if (Platform.isAndroid) {
-                // 안드로이드는 'NFC 태그 읽기/쓰기'까지 켜야 하므로 한 번 더 안내
                 _showReadWriteConfirmDialog();
               } else {
                 _goToSettingsThenHome();
@@ -134,12 +140,12 @@ class _AddTicketNfcScreenState extends State<AddTicketNfcScreen> {
       context: context,
       builder: (dialogContext) => CupertinoAlertDialog(
         title: const Text('설정 확인'),
-        content: Padding(
-          padding: const EdgeInsets.only(top: 8),
+        content: const Padding(
+          padding: EdgeInsets.only(top: 8),
           child: Text.rich(
             TextSpan(
-              style: const TextStyle(fontSize: 13, height: 1.5),
-              children: const [
+              style: TextStyle(fontSize: 13, height: 1.5),
+              children: [
                 TextSpan(text: '카드를 읽으려면\n'),
                 TextSpan(
                   text: 'NFC',
@@ -213,7 +219,7 @@ class _AddTicketNfcScreenState extends State<AddTicketNfcScreen> {
   }
 
   void _showWaitingDialog() {
-    if (!Platform.isAndroid) return; // iOS에서는 팝업 안 띄움
+    if (!Platform.isAndroid) return;
     _isDialogShowing = true;
     showCupertinoDialog(
       context: context,
@@ -254,7 +260,7 @@ class _AddTicketNfcScreenState extends State<AddTicketNfcScreen> {
   }
 
   void _showProcessingDialog() {
-    if (!Platform.isAndroid) return; // iOS에서는 팝업 안 띄움
+    if (!Platform.isAndroid) return;
     _isDialogShowing = true;
     showCupertinoDialog(
       context: context,
@@ -318,7 +324,6 @@ class _AddTicketNfcScreenState extends State<AddTicketNfcScreen> {
             ),
           );
         } else if (mounted && !Platform.isAndroid) {
-          // iOS에서는 바로 화면 전환만
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const TicketScreen()),
@@ -368,7 +373,6 @@ class _AddTicketNfcScreenState extends State<AddTicketNfcScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 화면 자체는 백그라운드용
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F7),
       appBar: AppBar(
@@ -398,4 +402,3 @@ class _AddTicketNfcScreenState extends State<AddTicketNfcScreen> {
     );
   }
 }
-  

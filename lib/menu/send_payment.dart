@@ -61,7 +61,7 @@ class _SendPaymentScreenState extends State<SendPaymentScreen> {
     _fetchUserInfo(); // ✅ 유저 정보 가져오기
   }
 
-// ✅ 유저 정보 불러오기 함수
+  // ✅ 유저 정보 불러오기 함수
   Future<void> _fetchUserInfo() async {
     try {
       final response =
@@ -129,7 +129,6 @@ class _SendPaymentScreenState extends State<SendPaymentScreen> {
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Scaffold(
-          resizeToAvoidBottomInset: false,
           backgroundColor: const Color(0xFFF5F6F7),
           appBar: AppBar(
             toolbarHeight: 70,
@@ -154,91 +153,68 @@ class _SendPaymentScreenState extends State<SendPaymentScreen> {
               ),
             ),
           ),
-          body: Stack(
-            children: [
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildInputField(
-                        controller: departmentController,
-                        label: "학과",
-                        hintText: "학과 입력",
-                      ),
-                      const SizedBox(height: 14),
-                      _buildInputField(
-                        controller: studentIdController,
-                        label: "학번",
-                        hintText: "학번 입력",
-                        keyboardType: TextInputType.number,
-                      ),
-                      const SizedBox(height: 14),
-                      _buildInputField(
-                        controller: nameController,
-                        label: "이름",
-                        hintText: "이름 입력",
-                      ),
-                      const SizedBox(height: 14),
-                      _buildInputField(
-                        controller: phoneController,
-                        label: "전화번호",
-                        hintText: "전화번호 입력",
-                        keyboardType: TextInputType.phone,
-                      ),
-                      const SizedBox(height: 14),
-                      _buildEventDropdown(),
-                      const SizedBox(height: 14),
-                      _buildImagePickerField(),
-                    ],
-                  ),
+          body: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildInputField(
+                  controller: departmentController,
+                  label: "학과",
+                  hintText: "학과 입력",
                 ),
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    16.0,
-                    0,
-                    16.0,
-                    MediaQuery.of(context).viewPadding.bottom > 0 ? 16.0 : 0.0,
+                const SizedBox(height: 14),
+                _buildInputField(
+                  controller: studentIdController,
+                  label: "학번",
+                  hintText: "학번 입력",
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 14),
+                _buildInputField(
+                  controller: nameController,
+                  label: "이름",
+                  hintText: "이름 입력",
+                ),
+                const SizedBox(height: 14),
+                _buildInputField(
+                  controller: phoneController,
+                  label: "전화번호",
+                  hintText: "전화번호 입력",
+                  keyboardType: TextInputType.phone,
+                ),
+                const SizedBox(height: 14),
+                _buildEventDropdown(),
+                const SizedBox(height: 14),
+                _buildImagePickerField(),
+                const SizedBox(height: 28), // 사진과 버튼 사이의 여백
+                ElevatedButton(
+                  onPressed: _isFormValid() ? _showConfirmationDialog : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFC10230),
+                    disabledBackgroundColor:
+                        const Color(0xFFC10230).withOpacity(0.3),
+                    minimumSize: const Size(double.infinity, 55),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    foregroundColor: Colors.white,
+                    disabledForegroundColor: Colors.white.withOpacity(0.7),
                   ),
-                  child: SafeArea(
-                    child: ElevatedButton(
-                      onPressed:
-                          _isFormValid() ? _showConfirmationDialog : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFC10230),
-                        disabledBackgroundColor:
-                            const Color(0xFFC10230).withOpacity(0.3),
-                        minimumSize: const Size(double.infinity, 55),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        foregroundColor: Colors.white,
-                        disabledForegroundColor: Colors.white.withOpacity(0.7),
-                      ),
-                      child: const Text(
-                        '완료',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
+                  child: const Text(
+                    '완료',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 20), // 하단 안전 여백
+              ],
+            ),
           ),
         ),
       ),
@@ -442,7 +418,7 @@ class _SendPaymentScreenState extends State<SendPaymentScreen> {
                   return DropdownMenuItem<String>(
                     value: ticket['_id'],
                     child: Text(
-                        "${ticket['eventTitle']} (${ticket['affiliation']})"), // ✅ 행사 + 소속
+                        "${ticket['eventTitle']} (${ticket['affiliation']})"),
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -523,8 +499,8 @@ class _SendPaymentScreenState extends State<SendPaymentScreen> {
                         child: Image.file(
                           _image!,
                           fit: BoxFit.cover,
-                          width: 150, // 원하는 너비로 설정
-                          height: 150, // 원하는 높이로 설정
+                          width: 150,
+                          height: 150,
                         ),
                       ),
                       Positioned(

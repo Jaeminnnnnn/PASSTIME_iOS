@@ -29,7 +29,6 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   bool isLoading = true;
   bool hasError = false;
 
-  // 1. GlobalKey와 점선의 Y 좌표를 저장할 변수 추가
   final GlobalKey _dottedLineKey = GlobalKey();
   double _dottedLineY = 0.0;
 
@@ -38,7 +37,6 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
     super.initState();
     fetchTicketDetail();
 
-    // 3. 화면 렌더링이 끝난 후 점선의 위치를 계산하는 함수 호출
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _updateCirclePosition();
     });
@@ -64,7 +62,6 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
           ticketData = response.data['result'];
           isLoading = false;
         });
-        // 데이터 로드 후에도 위치를 다시 계산하도록 설정
         WidgetsBinding.instance
             .addPostFrameCallback((_) => _updateCirclePosition());
       } else {
@@ -78,17 +75,13 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
     }
   }
 
-  // 4. 점선의 위치를 계산하고 상태를 업데이트하는 함수
   void _updateCirclePosition() {
     final RenderBox? box =
         _dottedLineKey.currentContext?.findRenderObject() as RenderBox?;
     if (box != null) {
-      // Column 내부에서의 상대적인 Y 좌표를 가져옵니다.
       final parentData = box.parentData as FlexParentData;
       final yPosition = parentData.offset.dy;
 
-      // 계산된 위치가 현재 위치와 다를 경우에만 UI를 갱신합니다.
-      // 반원의 높이가 30이므로, Y축 중심을 맞추기 위해 15를 빼줍니다.
       if (yPosition > 0 && _dottedLineY != yPosition - 15) {
         setState(() {
           _dottedLineY = yPosition - 15;
@@ -101,15 +94,22 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
     if (widget.readOnly) return;
 
     final kakaoPlace = ticketData?['kakaoPlace'] as Map<String, dynamic>?;
-    if (kakaoPlace == null ||
-        kakaoPlace['y'] == null ||
-        kakaoPlace['x'] == null) {
+
+    final rawY =
+        kakaoPlace?['y'] ?? ticketData?['y'] ?? ticketData?['latitude'];
+    final rawX =
+        kakaoPlace?['x'] ?? ticketData?['x'] ?? ticketData?['longitude'];
+
+    if (rawY == null || rawX == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('지도 위치 정보를 불러올 수 없습니다.')),
+      );
       return;
     }
 
     try {
-      final double lat = double.parse(kakaoPlace['y'].toString());
-      final double lng = double.parse(kakaoPlace['x'].toString());
+      final double lat = double.parse(rawY.toString());
+      final double lng = double.parse(rawX.toString());
 
       Navigator.push(
         context,
@@ -117,23 +117,27 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
           builder: (_) => MapViewScreen(
             latitude: lat,
             longitude: lng,
-            placeName: kakaoPlace['place_name']?.toString() ??
+            placeName: kakaoPlace?['place_name']?.toString() ??
+                ticketData?['eventPlace']?.toString() ??
                 ticketData?['eventTitle']?.toString(),
-            addressName: kakaoPlace['address_name']?.toString(),
+            addressName: kakaoPlace?['address_name']?.toString(),
           ),
         ),
       );
     } catch (e) {
-      return;
+      debugPrint('좌표 파싱 에러: $e');
     }
   }
 
   Widget _buildKakaoMap() {
     final kakaoPlace = ticketData?['kakaoPlace'] as Map<String, dynamic>?;
 
-    if (kakaoPlace == null ||
-        kakaoPlace['y'] == null ||
-        kakaoPlace['x'] == null) {
+    final rawY =
+        kakaoPlace?['y'] ?? ticketData?['y'] ?? ticketData?['latitude'];
+    final rawX =
+        kakaoPlace?['x'] ?? ticketData?['x'] ?? ticketData?['longitude'];
+
+    if (rawY == null || rawX == null) {
       return Container(
         height: 200,
         width: double.infinity,
@@ -148,8 +152,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
     }
 
     try {
-      final double lat = double.parse(kakaoPlace['y']);
-      final double lng = double.parse(kakaoPlace['x']);
+      final double lat = double.parse(rawY.toString());
+      final double lng = double.parse(rawX.toString());
       final LatLng position = LatLng(latitude: lat, longitude: lng);
 
       return KakaoMap(
@@ -173,8 +177,6 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // build가 호출될 때마다 위치를 다시 계산하도록 예약합니다.
-    // 이렇게 하면 화면 크기 변경 등에도 대응할 수 있습니다.
     WidgetsBinding.instance
         .addPostFrameCallback((_) => _updateCirclePosition());
 
@@ -232,7 +234,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                 vertical: 12,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF334D61).withOpacity(0.08),
+                                color:
+                                    const Color(0xFF334D61).withOpacity(0.08),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color:
@@ -288,7 +291,6 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                             children: [
                               Column(
                                 children: [
-                                  // 상단 정보 영역
                                   Padding(
                                     padding: const EdgeInsets.all(28),
                                     child: Column(
@@ -298,9 +300,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                         Row(
                                           children: [
                                             Text(
-                                              widget.readOnly
-                                                  ? "참여 행사"
-                                                  : "입장권",
+                                              widget.readOnly ? "참여 행사" : "입장권",
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 color: widget.readOnly
@@ -323,9 +323,9 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                                     vertical: 3,
                                                   ),
                                                   decoration: BoxDecoration(
-                                                    color: const Color(
-                                                            0xFF9E9E9E)
-                                                        .withOpacity(0.15),
+                                                    color:
+                                                        const Color(0xFF9E9E9E)
+                                                            .withOpacity(0.15),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             4),
@@ -357,7 +357,6 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                             height: 30,
                                             thickness: 1,
                                             color: Color(0xFFEEEDE3)),
-                                        // 날짜/시간
                                         Row(
                                           children: [
                                             Expanded(
@@ -451,7 +450,6 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                             height: 30,
                                             thickness: 1,
                                             color: Color(0xFFEEEDE3)),
-                                        // 장소 설명
                                         Text(
                                           "장소 설명",
                                           style: TextStyle(
@@ -462,10 +460,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                         ),
                                         const SizedBox(height: 5),
                                         Container(
-                                          height:
-                                              82, // 1. 전체 공간의 높이를 60으로 고정합니다.
-                                          alignment: Alignment
-                                              .topLeft, // 2. 자식 위젯(Text)을 컨테이너의 왼쪽 상단에 배치합니다.
+                                          height: 82,
+                                          alignment: Alignment.topLeft,
                                           child: Text(
                                             ticketData?["eventPlaceComment"] ??
                                                 "장소 설명 없음",
@@ -514,16 +510,14 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                       ],
                                     ),
                                   ),
-                                  // 점선 구분선
                                   SizedBox(
-                                    key: _dottedLineKey, // 2. 점선 위젯에 key 할당
+                                    key: _dottedLineKey,
                                     height: 0,
                                     child: CustomPaint(
                                       painter: DottedLinePainter(),
                                       child: Container(),
                                     ),
                                   ),
-                                  // 2. 지도 + Marquee 영역 (Stack으로 변경)
                                   ClipRRect(
                                     borderRadius: const BorderRadius.only(
                                       bottomLeft: Radius.circular(20),
@@ -536,8 +530,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                                 height: 200,
                                                 width: double.infinity,
                                                 child: ColorFiltered(
-                                                  colorFilter:
-                                                      ColorFilter.mode(
+                                                  colorFilter: ColorFilter.mode(
                                                     Colors.grey
                                                         .withOpacity(0.35),
                                                     BlendMode.saturation,
@@ -554,7 +547,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                                 child: Container(
                                                   width: double.infinity,
                                                   height: 28,
-                                                  color: const Color(0xFF9E9E9E),
+                                                  color:
+                                                      const Color(0xFF9E9E9E),
                                                   alignment: Alignment.center,
                                                   child: const Text(
                                                     '참여 기록은 조회만 가능합니다',
@@ -569,9 +563,9 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                               ),
                                             ],
                                           )
-                                        : GestureDetector(
-                                            behavior: HitTestBehavior.opaque,
-                                            onTap: _openMapView,
+                                        : SizedBox(
+                                            height: 200,
+                                            width: double.infinity,
                                             child: Stack(
                                               children: [
                                                 SizedBox(
@@ -580,6 +574,19 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                                   child: IgnorePointer(
                                                     ignoring: true,
                                                     child: _buildKakaoMap(),
+                                                  ),
+                                                ),
+                                                Positioned(
+                                                  top: 65,
+                                                  left: 0,
+                                                  right: 0,
+                                                  child: Align(
+                                                    alignment: Alignment.center,
+                                                    child: Image.asset(
+                                                      'assets/images/marker.png',
+                                                      width: 40,
+                                                      height: 40,
+                                                    ),
                                                   ),
                                                 ),
                                                 Positioned(
@@ -614,8 +621,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                                   child: Container(
                                                     width: double.infinity,
                                                     height: 23,
-                                                    color: const Color(
-                                                        0xFFC10230),
+                                                    color:
+                                                        const Color(0xFFC10230),
                                                     child: Marquee(
                                                       text:
                                                           "캡쳐하신 입장권은 사용할 수 없습니다.",
@@ -632,16 +639,11 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                                     ),
                                                   ),
                                                 ),
-                                                Positioned(
-                                                  top: 65,
-                                                  left: 0,
-                                                  right: 0,
-                                                  child: Align(
-                                                    alignment: Alignment.center,
-                                                    child: Image.asset(
-                                                      'assets/images/marker.png',
-                                                      width: 40,
-                                                      height: 40,
+                                                Positioned.fill(
+                                                  child: Material(
+                                                    color: Colors.transparent,
+                                                    child: InkWell(
+                                                      onTap: _openMapView,
                                                     ),
                                                   ),
                                                 ),
@@ -651,8 +653,6 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                   ),
                                 ],
                               ),
-                              // 좌우의 반원 (점선 위치에 맞춰 조정)
-                              // 5. top 값을 고정값 대신 동적으로 계산된 _dottedLineY 변수로 변경
                               if (_dottedLineY > 0)
                                 Positioned(
                                   left: -15,
@@ -690,7 +690,6 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   }
 }
 
-// 점선 그리는 CustomPainter
 class DottedLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
