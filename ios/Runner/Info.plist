@@ -40,10 +40,6 @@
 
         <key>NFCReaderUsageDescription</key>
         <string>앱에서 티켓 등록을 위해 NFC 태그를 읽기 위해 사용됩니다.</string>
-        <key>com.apple.developer.nfc.readersession.formats</key>
-        <array>
-            <string>NDEF</string>
-        </array>
         <key>UIRequiredDeviceCapabilities</key>
         <array>
             <string>nfc</string>
